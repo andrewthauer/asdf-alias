@@ -1,0 +1,203 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+HELP="
+Usage:
+
+bash $0 PLUGIN_NAME TOOL_TEST GH_USER AUTHOR_NAME TOOL_GH TOOL_PAGE LICENSE
+
+All arguments are optional and will be interactively prompted when not given.
+
+PLUGIN_NAME.
+   A name for your new plugin always starting with \`asdf-\` prefix.
+
+TOOL_TEST.
+   A shell command used to test correct installation.
+   Normallly this command is something taking \`--version\` or \`--help\`.
+
+GH_USER.
+   Your GitHub username.
+
+AUTHOR_NAME.
+   Your name, used for licensing.
+
+TOOL_GH.
+   The tool's github homepage. Default installation process will try to use
+   this to access github releases.
+
+TOOL_PAGE.
+   Documentation site for tool usage, mostly informative for users.
+
+LICENSE.
+   A license keyword.
+   https://help.github.com/en/github/creating-cloning-and-archiving-repositories/licensing-a-repository#searching-github-by-license-type
+"
+HELP_PLUGIN_NAME="Name for your plugin, starting with \`asdf-\`, eg. \`asdf-foo\`"
+HELP_TOOL_CHECK="Shell command for testing correct tool installation. eg. \`foo --version\` or \`foo --help\`"
+HELP_TOOL_REPO="The tool's github homepage."
+HELP_TOOL_HOMEPAGE="The tool's documentation homepage if necessary."
+
+ask_for() {
+  local prompt="$1"
+  local default_value="${2:-}"
+  local alternatives="${3:-"[$default_value]"}"
+  local value=""
+  while [ -z "$value" ]; do
+    echo "$prompt" >&2
+    if [ "[]" != "$alternatives" ]; then
+      echo -n "$alternatives " >&2
+    fi
+    echo -n "> " >&2
+    read -r value
+    echo >&2
+    if [ -z "$value" ] && [ -n "$default_value" ]; then
+      value="$default_value"
+    fi
+  done
+  echo "$value"
+}
+
+download_license() {
+  local keyword file
+  keyword="$1"
+  file="$2"
+  curl -qsL "https://raw.githubusercontent.com/github/choosealicense.com/gh-pages/_licenses/${keyword}.txt" |
+    extract_license >"$file"
+}
+
+extract_license() {
+  awk '/^---/{f=1+f} f==2 && /^$/ {f=3} f==3'
+}
+
+test_url() {
+  curl -fqsL -I "$1" | head -n 1 | grep 200 >/dev/null
+}
+
+ask_license() {
+  local license keyword
+
+  echo "Please choose a LICENSE keyword."
+  echo
+  echo "See available license keywords at"
+  echo "https://help.github.com/en/github/creating-cloning-and-archiving-repositories/licensing-a-repository#searching-github-by-license-type"
+
+  while true; do
+    license="$(ask_for "License keyword:" "apache-2.0" "mit/[apache-2.0]/agpl-3.0/unlicense")"
+    keyword=$(echo "$license" | tr '[:upper:]' '[:lower:]')
+
+    url="https://choosealicense.com/licenses/$keyword/"
+    if test_url "$url"; then
+      break
+    else
+      echo "Invalid license keyword: $license"
+    fi
+  done
+
+  echo "$keyword"
+}
+
+set_placeholder() {
+  local name value out file tmpfile
+  name="$1"
+  value="$2"
+  out="$3"
+
+  git grep -l -F --untracked "$name" -- "$out" |
+    while IFS=$'\n' read -r file; do
+      tmpfile="$file.sed"
+      sed "s#$name#$value#g" "$file" >"$tmpfile" && mv "$tmpfile" "$file"
+    done
+}
+
+setup() {
+  local cwd out tool_name tool_repo check_command author_name github_username tool_homepage ok
+
+  cwd="$PWD"
+  out="$cwd/out"
+
+  # ask for arguments not given via CLI
+  tool_name="${1:-$(ask_for "$HELP_PLUGIN_NAME")}"
+  tool_name="${tool_name/asdf-/}"
+  check_command="${2:-$(ask_for "$HELP_TOOL_CHECK" "$tool_name --help")}"
+
+  github_username="${3:-$(ask_for "Your GitHub username")}"
+  author_name="${4:-$(ask_for "Your name" "$(git config user.name 2>/dev/null)")}"
+
+  tool_repo="${5:-$(ask_for "$HELP_TOOL_REPO" "https://github.com/$github_username/$tool_name")}"
+  tool_homepage="${6:-$(ask_for "$HELP_TOOL_HOMEPAGE" "https://github.com/$github_username/$tool_name")}"
+  license_keyword="${7:-$(ask_license)}"
+  license_keyword="$(echo "$license_keyword" | tr '[:upper:]' '[:lower:]')"
+
+  cat <<-EOF
+Setting up plugin: asdf-$tool_name
+
+author:        $author_name
+plugin repo:   https://github.com/$github_username/asdf-$tool_name
+license:       https://choosealicense.com/licenses/$license_keyword/
+
+
+$tool_name github:   $tool_repo
+$tool_name docs:     $tool_homepage
+$tool_name test:     \`$check_command\`
+
+After confirmation, the \`master\` will be replaced with the generated
+template using the above information. Please ensure all seems correct.
+EOF
+
+  ok="${8:-$(ask_for "Type \`yes\` if you want to continue.")}"
+  if [ "yes" != "$ok" ]; then
+    echo "Nothing done."
+  else
+    (
+      set -e
+      # previous cleanup to ensure we can run this program many times
+      git branch template 2>/dev/null || true
+      git checkout -f template
+      git worktree remove -f out 2>/dev/null || true
+      git branch -D out 2>/dev/null || true
+
+      # checkout a new worktree and replace placeholders there
+      git worktree add --detach out
+
+      cd "$out"
+      git checkout --orphan out
+      git rm -rf "$out" >/dev/null
+      git read-tree --prefix=/ -u template:template/
+
+      download_license "$license_keyword" "$out/LICENSE"
+
+      set_placeholder "<YOUR TOOL>" "$tool_name" "$out"
+      set_placeholder "<TOOL HOMEPAGE>" "$tool_homepage" "$out"
+      set_placeholder "<TOOL REPO>" "$tool_repo" "$out"
+      set_placeholder "<TOOL CHECK>" "$check_command" "$out"
+      set_placeholder "<YOUR NAME>" "$author_name" "$out"
+      set_placeholder "<YOUR GITHUB USERNAME>" "$github_username" "$out"
+
+      git add "$out"
+      git commit -m "Generate asdf-$tool_name plugin from template."
+
+      cd "$cwd"
+      git branch -M out master
+      git worktree remove -f out
+      git checkout -f master
+
+      echo "All done."
+      echo "Your master branch has been reset to an initial commit."
+      echo "You might want to push using \`--force-with-lease\` to origin/master"
+
+      echo "Showing pending TODO tags that you might want to review"
+      git grep -n -C 3 "TODO"
+    ) || cd "$cwd"
+  fi
+}
+
+case "${1:-}" in
+  "-h" | "--help" | "help")
+    echo "$HELP"
+    exit 0
+    ;;
+  *)
+    setup "$@"
+    ;;
+esac
