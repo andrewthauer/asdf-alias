@@ -10,39 +10,20 @@ on:
     - cron: "0 0 * * *" # daily at midnight
 
 jobs:
-  test:
-    name: template setup test
+  plugin_test:
+    name: asdf plugin test
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Run Template Setup
-        run: |
-          git config user.name "Foo Bearer"
-          ./setup.bash \
-            "asdf-foo" \
-            "foo --helo" \
-            "asdf-community" \
-            "ASDF Community" \
-            "https://github.com/asdf-vm/asdf" \
-            "https://asdf-vm.com" \
-            "Apache-2.0" \
-            "yes"
-
-      - name: Check setup result
-        run: |
-          set -xe
-          ls -la .
-          git log
-          test ! -d template/
-          grep "Apache" LICENSE
-          test "master" = "$(git rev-parse --abbrev-ref HEAD)"
-          ! git grep -F -e "asdf-alias" \
-                   --or -e "http://github.com/andrewthauer/asdf-alias" \
-                   --or -e "http://github.com/andrewthauer/asdf-alias" \
-                   --or -e "asdf alias" \
-                   --or -e "Andrew Thauer" \
-                   --or -e "andrewthauer"
+      # TODO: this is an extension-commands plugin.
+      - name: Test asdf alias
+      - run: true
+      # There's no tool-version to test.
+      # - name: asdf_plugin_test
+      #   uses: asdf-vm/actions/plugin-test@v1.0.0
+      #   with:
+      #     command: asdf help | grep 'asdf alias'
+      #   env:
+      #     GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
