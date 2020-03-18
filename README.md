@@ -1,15 +1,47 @@
-# asdf-plugin-template
+<div align="center">
 
-This is an [asdf-vm plugin](https://asdf-vm.com/#/plugins-create) template with CI to run [Shellcheck](https://github.com/koalaman/shellcheck) and testing with the [asdf test GitHub Action](https://github.com/asdf-vm/actions).
+# asdf-alias ![Build](https://github.com/andrewthauer/asdf-alias/workflows/Build/badge.svg) ![Lint](https://github.com/andrewthauer/asdf-alias/workflows/Lint/badge.svg)
 
+[asdf-alias](https://github.com/andrewthauer/asdf-alias) is a version alias
+manager plugin for the [asdf version manager](https://asdf-vm.com).
+
+</div>
+
+## Contents
+
+- [Install](#install)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Install
+
+```shell
+asdf plugin add asdf-alias
+# or
+asdf plugin add https://github.com/andrewthauer/asdf-alias.git
+```
 
 ## Usage
 
-1. Create repository based on [this template](https://github.com/asdf-vm/asdf-plugin-template/generate)
-2. Clone locally and run `bash setup.bash`.
-3. Adapt your code following the `TODO` notes on `lib/utils.bash`.
-4. Last but not least, be sure to read all you can do with your awesome plugin, read the [plugins create section of the docs](https://asdf-vm.com/#/plugins-create).
+asdf alias <plugin> <name> [<version> | --auto | --remove]"
+asdf alias <plugin> --auto"
+asdf alias <plugin> [--list]"
+
+```sh
+asdf alias java 11.0 adopt-openjdk-11.0
+asdf alias java 11.0 --remove
+asdf alias java --auto
+asdf alias java --list
+asdf alias java --remove
+```
 
 ## Contributing
 
-Contributions welcome!
+Contributions of any kind welcome! See the [contributing guide](contributing.md).
+
+[Thanks goes to these contributors](https://github.com/andrew-thauer/asdf-alias/graphs/contributors)!
+
+## License
+
+See [LICENSE](LICENSE) © [Andrew Thauer](https://github.com/andrewthauer/)
