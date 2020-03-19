@@ -119,7 +119,7 @@ recommended_aliases() {
 
 reshim_plugin() {
   local plugin="$1"
-  asdf reshim $plugin
+  asdf reshim "$plugin"
 }
 
 abort() {
@@ -133,7 +133,7 @@ abort() {
 
 main() {
   plugin="$1"
-  alias="$2"
+  # alias="$2" -- not used directly
   version="$3"
   install_dir="$ASDF_DATA_DIR/installs/$plugin"
 
@@ -162,7 +162,7 @@ main() {
         esac
       else
         echo "$2 => $3"
-        ln -nsf "$3" "$2" && reshim_plugin
+        ln -nsf "$3" "$2" && reshim_plugin "$@"
       fi
       ;;
 
