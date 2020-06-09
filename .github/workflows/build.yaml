@@ -19,7 +19,7 @@ jobs:
     steps:
       # TODO: this is an extension-commands plugin.
       - name: Test asdf alias
-      - run: true
+        run: true
       # There's no tool-version to test.
       # - name: asdf_plugin_test
       #   uses: asdf-vm/actions/plugin-test@v1.0.0
