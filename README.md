@@ -17,9 +17,9 @@ manager plugin for the [asdf version manager](https://asdf-vm.com).
 ## Install
 
 ```shell
-asdf plugin add asdf-alias
+asdf plugin add alias
 # or
-asdf plugin add https://github.com/andrewthauer/asdf-alias.git
+asdf plugin add alias https://github.com/andrewthauer/asdf-alias.git
 ```
 
 ## Usage
