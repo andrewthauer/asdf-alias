@@ -29,6 +29,7 @@ asdf alias <plugin> --auto"
 asdf alias <plugin> [--list]"
 
 ```sh
+asdf alias java adopt-openjdk-11.0 adoptopenjdk-11.0.10+9
 asdf alias java 11.0 adopt-openjdk-11.0
 asdf alias java 11.0 --remove
 asdf alias java --auto
