@@ -135,7 +135,7 @@ main() {
   plugin="$1"
   # alias="$2" -- not used directly
   version="$3"
-  install_dir="$ASDF_DATA_DIR/installs/$plugin"
+  install_dir="${ASDF_DATA_DIR:-$HOME/.asdf}/installs/$plugin"
 
   [ ! -d "$install_dir" ] && abort "The plugin '$plugin' could not be found"
   cd "$install_dir"
