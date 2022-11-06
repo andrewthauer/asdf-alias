@@ -6,8 +6,6 @@ on:
   push:
     paths-ignore:
       - "**.md"
-  schedule:
-    - cron: "0 0 * * *" # daily at midnight
 
 jobs:
   plugin_test:
@@ -15,15 +13,28 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
+    env:
+      TERM: dumb
     runs-on: ${{ matrix.os }}
     steps:
-      # TODO: this is an extension-commands plugin.
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: Install asdf
+        uses: actions/checkout@v2
+        with:
+          repository: asdf-vm/asdf
+          path: asdf
       - name: Test asdf alias
-        run: true
-      # There's no tool-version to test.
-      # - name: asdf_plugin_test
-      #   uses: asdf-vm/actions/plugin-test@v1.0.0
-      #   with:
-      #     command: asdf help | grep 'asdf alias'
-      #   env:
-      #     GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir custom-asdf-data-dir
+          export ASDF_DATA_DIR="$PWD/custom-asdf-data-dir"
+          . ${PWD}/asdf/asdf.sh
+          asdf plugin-test alias "$GITHUB_WORKSPACE" --asdf-plugin-gitref "$GITHUB_SHA" --asdf-tool-version 1.0.0-test-install true
+          asdf plugin add java
+          asdf plugin add alias "$GITHUB_WORKSPACE"
+          asdf install java adoptopenjdk-11.0.10+9
+          asdf alias java 11.0 adoptopenjdk-11.0.10+9
+          asdf local java 11.0
+          asdf which java | grep -q "custom-asdf-data-dir/installs/java/11.0"

@@ -17,7 +17,7 @@ manager plugin for the [asdf version manager](https://asdf-vm.com).
 ## Install
 
 ```shell
-asdf plugin add asdf-alias
+asdf plugin add alias
 # or
 asdf plugin add alias https://github.com/andrewthauer/asdf-alias.git
 ```
@@ -29,6 +29,7 @@ asdf alias <plugin> --auto"
 asdf alias <plugin> [--list]"
 
 ```sh
+asdf alias java adopt-openjdk-11.0 adoptopenjdk-11.0.10+9
 asdf alias java 11.0 adopt-openjdk-11.0
 asdf alias java 11.0 --remove
 asdf alias java --auto

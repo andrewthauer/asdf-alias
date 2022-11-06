@@ -27,6 +27,8 @@
 set -e
 
 shopt -s nullglob
+# shellcheck source=/dev/null
+source "${ASDF_DIR}/lib/utils.bash"
 
 usage() {
   echo "usage"
@@ -161,6 +163,9 @@ main() {
             # *) abort "Don't know how to automatically alias $2" ;;
         esac
       else
+        if [ ! -e "${3}" ]; then
+          abort "Version $3 could not be found"
+        fi
         echo "$2 => $3"
         ln -nsf "$3" "$2" && reshim_plugin "$@"
       fi

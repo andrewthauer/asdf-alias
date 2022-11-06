@@ -6,34 +6,30 @@ on:
   push:
     paths-ignore:
       - "**.md"
-  schedule:
-    - cron: "0 0 * * *" # daily at midnight
 
 jobs:
   shellcheck:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     name: shellcheck
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Update Shellcheck
+      - name: Get packages
+        uses: delgurth/get-package@v5
+        with:
+          snap: shfmt
+          brew: shellcheck shfmt
+          apt-get: shellcheck
+      - name: Run ShellCheck
         run: |
-          sudo apt install xz-utils
-          wget -qO- "https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz" | tar -xJv
-          sudo cp "shellcheck-stable/shellcheck" /usr/bin/
-          shellcheck --version
-      - name: Shellcheck
-        run: shellcheck lib/commands/*.bash -P lib/
-
-  shfmt:
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install shfmt
-        run: brew install shfmt
-
-      - name: Run shfmt
-        run: shfmt -d -i 2 -ci .
+          shellcheck -V
+          shellcheck lib/commands/*.bash -P lib/
+          if command -v shfmt &> /dev/null
+          then
+            shfmt -d -i 2 -ci .
+          else
+            echo "shfmt failed to install, only seems to happen with https://github.com/nektos/act"
+          fi
