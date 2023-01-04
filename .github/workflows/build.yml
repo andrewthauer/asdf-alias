@@ -1,0 +1,31 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  plugin_test:
+    name: asdf plugin test
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Test plugin
+        uses: asdf-vm/actions/plugin-test@v1
+        with:
+          command: |
+            asdf plugin add java
+            asdf install java adoptopenjdk-11.0.10+9
+            asdf alias java 11.0 adoptopenjdk-11.0.10+9
+            asdf local java 11.0
+            asdf which java | grep -q "/installs/java/11.0"
