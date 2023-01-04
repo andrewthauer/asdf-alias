@@ -1,20 +1,11 @@
-<div align="center">
-
-# asdf-alias ![Build](https://github.com/andrewthauer/asdf-alias/workflows/Build/badge.svg) ![Lint](https://github.com/andrewthauer/asdf-alias/workflows/Lint/badge.svg)
+# asdf-alias [![Build](https://github.com/andrewthauer/asdf-alias/actions/workflows/build.yml/badge.svg)](https://github.com/andrewthauer/asdf-alias/actions/workflows/build.yml) [![Lint](https://github.com/andrewthauer/asdf-alias/actions/workflows/lint.yml/badge.svg)](https://github.com/andrewthauer/asdf-alias/actions/workflows/lint.yml)
 
 [asdf-alias](https://github.com/andrewthauer/asdf-alias) is a version alias
 manager plugin for the [asdf version manager](https://asdf-vm.com).
 
-</div>
-
-## Contents
-
-- [Install](#install)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## Install
+
+Plugin:
 
 ```shell
 asdf plugin add asdf-alias
@@ -22,7 +13,7 @@ asdf plugin add asdf-alias
 asdf plugin add alias https://github.com/andrewthauer/asdf-alias.git
 ```
 
-## Usage
+## Use
 
 asdf alias <plugin> <name> [<version> | --auto | --remove]"
 asdf alias <plugin> --auto"
@@ -35,6 +26,9 @@ asdf alias java --auto
 asdf alias java --list
 asdf alias java --remove
 ```
+
+Check [asdf](https://github.com/asdf-vm/asdf) readme for more instructions on how to
+install & manage versions.
 
 ## Contributing
 
